@@ -20,6 +20,8 @@ import {Storage} from '@ionic/storage';
   templateUrl: 'details.html',
 })
 export class DetailsPage {
+  private isFavourite = false;
+  private storage: Storage;
   
   tvShows: TvShow[];
   
@@ -38,10 +40,26 @@ export class DetailsPage {
     this.title = this.navParams.get('title');
     var id = this.navParams.get('tvShowId');
 
-   
-
+    this.storage.keys().then(x => {
+      this.isFavourite = x.some(y => y == id);
+    });
+    
    this.http.get<ApiResultDetail>('https://www.episodate.com/api/show-details?q=' + id)
    .subscribe(result => (this.tvShowDetail= result.tvShow));
+  }
+
+  changeFav() {
+    if (!this.isFavourite) {
+      this.storage.set(this.tvShowDetail.id.toString(), this.tvShowDetail).then(() => {
+        let alert = this.alertCtrl.create({
+          title:'Succesfully added to favorites'
+        });
+        alert.present();
+        setTimeout(() => {
+          alert.dismiss();
+        }, 800);
+      });
+    }
   }
 
   addToFav(show: TvShow) {
